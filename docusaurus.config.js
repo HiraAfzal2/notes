@@ -63,7 +63,7 @@ const config = {
         // Plugin Options for loading OpenAPI files
         specs: [
           {
-            spec: 'openapi/openapi.yaml',
+            spec: 'openapi.yaml',
             route: '/api/',
           },
         ],
@@ -94,6 +94,7 @@ const config = {
             label: 'Tutorial',
           },
           {to: '/blog', label: 'Blog', position: 'left'},
+          {to: '/api/', label: 'api', position: 'left'},
           {
             href: 'https://github.com/facebook/docusaurus',
             label: 'GitHub',

@@ -1,1852 +1,861 @@
-openapi: 3.0.1
+openapi: 3.0.0
 info:
-  title: MindKey Recruiting API
-  description: HTTP API for MindKey Recruiting.
-  contact:
-    name: MindKey Software A/S
-    url: https://www.mindkey.com
-    email: support@mindkey.dk
+  title: Recruiting API
   version: 1.0.0
 servers:
-  - url: https://recruiting-api.mindkey.com
-    description: Production API
+  - url: http:/{https://recruiting-api-dev.mindkey.com/
+tags:
+  - name: Vacancy List
+  - name: Vacancy List > Detailed
+  - name: Vacancy List > Simple
+  - name: Vacancy List > Simple > Filters
+  - name: Vacancy Details
+  - name: Basic
+  - name: Old
+  - name: Lookups
+  - name: Job Agents
+  - name: Candidates
 paths:
-  /{customerId}/candidates:
-    post:
-      tags:
-        - Candidate
-      summary: Create a new candidate.
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              required:
-                - Candidate.AllowSave
-                - Candidate.Email
-                - Candidate.NameFullName
-                - Candidate.PreviouslyApplied
-                - Candidate.VacancyId
-              type: object
-              properties:
-                Candidate:
-                  required:
-                    - allowSave
-                    - email
-                    - name
-                    - previouslyApplied
-                    - vacancyId
-                  type: object
-                  properties:
-                    vacancyId:
-                      maxLength: 10
-                      minLength: 0
-                      type: string
-                    name:
-                      maxLength: 150
-                      minLength: 0
-                      type: string
-                    email:
-                      minLength: 1
-                      type: string
-                      format: email
-                    previouslyApplied:
-                      type: boolean
-                    allowSave:
-                      type: boolean
-                    nationalityId:
-                      type: string
-                      nullable: true
-                    addressStreet1:
-                      type: string
-                      nullable: true
-                    addressStreet2:
-                      type: string
-                      nullable: true
-                    addressCity:
-                      type: string
-                      nullable: true
-                    addressStateProvince:
-                      type: string
-                      nullable: true
-                    addressZipPostalCode:
-                      type: string
-                      nullable: true
-                    addressCountryRegion:
-                      type: string
-                      nullable: true
-                    homePhone:
-                      type: string
-                      nullable: true
-                    mobilePhone:
-                      type: string
-                      nullable: true
-                    birthDate:
-                      type: string
-                      format: date-time
-                      nullable: true
-                    advertisementReference:
-                      type: string
-                      nullable: true
-                    gender:
-                      $ref: '#/components/schemas/EnumGender'
-                    salutation:
-                      $ref: '#/components/schemas/EnumSalutation'
-                    maritalStatus:
-                      $ref: '#/components/schemas/EnumMaritalStatus'
-                    candidateMailingTemplateId:
-                      type: string
-                      nullable: true
-                    locations:
-                      type: array
-                      items:
-                        type: string
-                      nullable: true
-                    regions:
-                      type: array
-                      items:
-                        type: string
-                      nullable: true
-                    fieldsOfWork:
-                      type: array
-                      items:
-                        type: string
-                      nullable: true
-                    vacancyElementLines:
-                      type: array
-                      items:
-                        type: string
-                      nullable: true
-                    attachmentDetails:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/AttachmentDetailBase'
-                      nullable: true
-                  additionalProperties: false
-                  description: |2-
-
-                     See CandidateUploadModel model.
-                  example: >-
-                    {"attachmentDetails":null,"vacancyId":null,"name":null,"email":null,"previouslyApplied":null,"allowSave":null,"nationalityId":null,"addressStreet1":null,"addressStreet2":null,"addressCity":null,"addressStateProvince":null,"addressZipPostalCode":null,"addressCountryRegion":null,"homePhone":null,"mobilePhone":null,"birthDate":null,"advertisementReference":null,"gender":"NotSpecified","salutation":"None","maritalStatus":"NotSpecified","candidateMailingTemplateId":null,"locations":null,"regions":null,"fieldsOfWork":null,"vacancyElementLines":null}
-                Attachments:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
-                  description: Array of FormFile
-                Image:
-                  type: string
-                  description: FormFile
-                  format: binary
-            encoding:
-              Attachments:
-                style: form
-              Image:
-                style: form
-              Candidate:
-                contentType: application/json
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                type: boolean
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/candidates/lookup/mailingtemplates:
+  /{recruiting_customer_id}/vacancies/detailed:
     get:
       tags:
-        - Candidate
-      summary: Get a list of supported mailing templates.
+        - Basic
+      summary: Get All Vacancies - Detailed
       parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
         - name: X-MindKey-User-Language
           in: header
-          description: Specify User UI Language
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
+          example: en-US
+        - name: Origin
           in: header
-          description: Specify User UI Culture
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
           schema:
             type: string
-            default: Europe/Copenhagen
+          required: true
       responses:
         '200':
-          description: Success
+          description: Successful response
           content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CandidateMailingTemplate'
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/candidates/lookup:
-    get:
+            application/json: {}
+    options:
       tags:
-        - Candidate
-      summary: Get lookup data to be used for creating a candidate.
+        - default
+      summary: Options
+      requestBody:
+        content: {}
       parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
+        - name: Access-Control-Request-Method
+          in: header
           schema:
             type: string
-            format: uuid
-        - name: IsDefault
+          example: GET
+        - name: Access-Control-Request-Headers
+          in: header
+          schema:
+            type: string
+          example: x-mindkey-user-language,x-mindkey-user-name,x-mindkey-user-timezone
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: https://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 15 Mar 2023 09:19:15 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            Server:
+              schema:
+                type: string
+                example: Kestrel
+            Request-Context:
+              schema:
+                type: string
+                example: appId=cid-v1:3a915af9-4520-41f5-82db-5436fdad8fe6
+            Expect-CT:
+              schema:
+                type: string
+                example: max-age=86400, enforce
+            X-Content-Type-Options:
+              schema:
+                type: string
+                example: nosniff
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: null
+  /{recruiting_customer_id}/vacancies/simple:
+    get:
+      tags:
+        - Basic
+      summary: Get All Vacancies - Simple
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-DK
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/vacancies/configuration/list:
+    get:
+      tags:
+        - Vacancy List
+      summary: Vacancy List Configuration
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-DK
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/vacancies/Roti-1:
+    get:
+      tags:
+        - Vacancy Details
+      summary: Get Vacancy Details - ExcludeAdvertisementText
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: IncludeAdvertisementText
           in: query
           schema:
             type: boolean
+          example: 'false'
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/vacancies/AdvertisementText/Roti-1:
+    get:
+      tags:
+        - Vacancy Details
+      summary: Get Vacancy AdvertisementText
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/vacancies/configuration/details:
+    get:
+      tags:
+        - Vacancy Details
+      summary: Vacancy Details Configuration
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-DK
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/jobAlerts:
+    post:
+      tags:
+        - Old
+      summary: CreateJobAlert (Invalid Mail)
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n\t\"email\":
+                \"thorsten.hans@thinktecture.com\",\n\t\"emailVerification\":
+                \"thorsten.hans@thinktecture.com2\"\n}"
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '400':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Old
+      summary: DeleteAllJobAlertsByMail
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/jobAlerts/1:
+    put:
+      tags:
+        - Old
+      summary: UpdateJobAlertDetails
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n\t\n}"'
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Old
+      summary: DeleteJobAlertById
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Old
+      summary: GetJobAlertDetails
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:4200
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/jobAlerts/link:
+    post:
+      tags:
+        - Old
+      summary: GenerateJobAlertLink
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n\t\"email\": \"thorsten.hans@thinktecture.com\"\n}"'
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/candidates/lookup/mailingtemplates:
+    get:
+      tags:
+        - Lookups
+      summary: Mailing Templates
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-DK
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/candidates/lookup:
+    get:
+      tags:
+        - Lookups
+      summary: Lookup Data Specific
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-DK
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
         - name: IncludeCountry
           in: query
           schema:
             type: boolean
+          example: 'false'
         - name: IncludeNationality
           in: query
           schema:
             type: boolean
-        - name: IncludeDocumentFileType
-          in: query
-          schema:
-            type: boolean
-        - name: IncludeCulture
-          in: query
-          schema:
-            type: boolean
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
+          example: 'true'
+        - name: recruiting_customer_id
+          in: path
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
+          required: true
       responses:
         '200':
-          description: Success
+          description: Successful response
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LookupData'
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/candidates/types/{candidateApplicationFormTypeId}:
+            application/json: {}
+  /{recruiting_customer_id}/job-agents/types/JobAgent:
     get:
       tags:
-        - Candidate
-      summary: Get the setup for a CandidateApplicationFormType.
+        - Job Agents
+      summary: Get Job Agent Type
       parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: candidateApplicationFormTypeId
-          in: path
-          description: >-
-            CandidateApplicationFormTypeId of the CandidateApplicationFormType
-            to get.
-          required: true
-          schema:
-            type: string
         - name: X-MindKey-User-Language
           in: header
-          description: Specify User UI Language
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
+          example: da-dk
+        - name: Origin
           in: header
-          description: Specify User UI Culture
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
           schema:
             type: string
-            default: Europe/Copenhagen
+          required: true
       responses:
         '200':
-          description: Success
+          description: Successful response
           content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/JobAgentType'
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/job-agents/configuration:
-    get:
-      tags:
-        - JobAgent
-      summary: Get configuration for the job agent
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/JobAgentConfiguration'
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/job-agents/types/{jobAgentTypeId}:
-    get:
-      tags:
-        - JobAgent
-      summary: Get the setup for a JobAgentType.
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: jobAgentTypeId
-          in: path
-          description: JobAgentTypeId of the JobAgentType to get.
-          required: true
-          schema:
-            type: string
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/JobAgentType'
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/job-agents/create/{jobAgentTypeId}:
+            application/json: {}
+  /{recruiting_customer_id}/job-agents/create/JobAgent:
     post:
       tags:
-        - JobAgent
+        - Job Agents
       summary: Create Job Agent
-      description: Create Job Agent
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: jobAgentTypeId
-          in: path
-          description: JobAgentTypeId of the JobAgentType to get.
-          required: true
-          schema:
-            type: string
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/JobAgent'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/JobAgent'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/JobAgent'
-      responses:
-        '200':
-          description: Job Agent created
-        '400':
-          description: Bad request provided
-        '409':
-          description: Job agent already exists
-        '500':
-          description: Internal Server Error occured
-  /{customerId}/job-agents/activate/{jobAgentTypeId}:
-    post:
-      tags:
-        - JobAgent
-      summary: Activate Job Agent
-      description: Activate Job Agent
+              type: object
+              example:
+                name: Henrik Skak Pedersen
+                email: henriksp@me.com
+                keywords: Service Design, UX, kommunikation, projektledelse, innovation
+                cultureId: null
+                locations:
+                  - L5
+                regions:
+                  - Sjælland
+                fieldsOfWork:
+                  - Byggekonst
       parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: jobAgentTypeId
-          in: path
-          description: JobAgentTypeId
-          required: true
-          schema:
-            type: string
         - name: X-MindKey-User-Language
           in: header
-          description: Specify User UI Language
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
+          example: da-dk
+        - name: Origin
           in: header
-          description: Specify User UI Culture
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
           schema:
             type: string
-            default: Europe/Copenhagen
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: string
-          text/json:
-            schema:
-              type: string
-          application/*+json:
-            schema:
-              type: string
+          required: true
       responses:
         '200':
-          description: Job Agent activated
-        '400':
-          description: Bad request provided
-        '500':
-          description: Internal Server Error occured
-  /{customerId}/job-agents/resend-email/{jobAgentTypeId}:
-    post:
-      tags:
-        - JobAgent
-      summary: Resend subscription e-mail to Job Agent
-      description: Send subscription e-mail to Job Agent
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: jobAgentTypeId
-          in: path
-          description: JobAgentTypeId.
-          required: true
-          schema:
-            type: string
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: string
-          text/json:
-            schema:
-              type: string
-          application/*+json:
-            schema:
-              type: string
-      responses:
-        '200':
-          description: Subscription mail has been send to Job Agent
-        '400':
-          description: Bad request provided
-        '500':
-          description: Internal Server Error occured
-  /{customerId}/job-agents/{jobAgentTypeId}:
-    post:
-      tags:
-        - JobAgent
-      summary: Get a job agent by JobAgentId.
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: jobAgentTypeId
-          in: path
-          description: JobAgentTypeId.
-          required: true
-          schema:
-            type: string
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/JobAgentGet'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/JobAgentGet'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/JobAgentGet'
-      responses:
-        '200':
-          description: Success
+          description: Successful response
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/JobAgent'
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
+            application/json: {}
+  /{recruiting_customer_id}/job-agents/resend-email/JobAgent:
+    post:
+      tags:
+        - Job Agents
+      summary: Resend E-mail
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example: henriksp@me.com
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/job-agents/activate/JobAgent:
+    post:
+      tags:
+        - Job Agents
+      summary: Activate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example: F38971DF451B125926EED7867AE08BDFD4D4EF18E81AC86AE023544D3C97925E
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/job-agents/emailexists/JobAgent:
+    post:
+      tags:
+        - Job Agents
+      summary: Email Exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example: henriksp@me.com
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/job-agents/JobAgent:
+    post:
+      tags:
+        - Job Agents
+      summary: Get Job Agent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                JobAgentId: 099a99f2-5d07-4937-94c1-7da93861e8d8
+                Code: >-
+                  A2B31CDDEE6EC49805F29EE9929A28DFDAF4CB3C9197868CD175979CC70B0B06
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
     put:
       tags:
-        - JobAgent
+        - Job Agents
       summary: Update Job Agent
-      description: Update Job Agent
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: jobAgentTypeId
-          in: path
-          description: JobAgentTypeId.
-          required: true
-          schema:
-            type: string
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/JobAgentUpdate'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/JobAgentUpdate'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/JobAgentUpdate'
+              type: object
+              example:
+                JobAgentId: 4ad410fd-acae-4aa5-bbad-b725442b23eb
+                Code: >-
+                  F38971DF451B125926EED7867AE08BDFD4D4EF18E81AC86AE023544D3C97925E
+                name: Henrik Skak Pedersen
+                email: henriksp@me.com
+                keywords: Service Design, UX, kommunikation, projektledelse, innovation
+                cultureId: null
+                locations:
+                  - L5
+                  - L1
+                regions:
+                  - Sjælland
+                fieldsOfWork:
+                  - Byggekonst
+      parameters:
+        - name: X-MindKey-User-Language
+          in: header
+          schema:
+            type: string
+          example: da-dk
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
       responses:
         '200':
-          description: Job Agent updated
-        '400':
-          description: Bad request provided
-        '404':
-          description: Job Agent was not found
-        '500':
-          description: Internal Server Error occured
+          description: Successful response
+          content:
+            application/json: {}
     delete:
       tags:
-        - JobAgent
+        - Job Agents
       summary: Delete Job Agent
-      description: Delete Job Agent
       parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: jobAgentTypeId
-          in: path
-          description: JobAgentTypeId.
-          required: true
-          schema:
-            type: string
         - name: X-MindKey-User-Language
           in: header
-          description: Specify User UI Language
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
+          example: da-dk
+        - name: Origin
           in: header
-          description: Specify User UI Culture
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/job-agents/configuration:
+    get:
+      tags:
+        - Job Agents
+      summary: Get Job Agent Configuration
+      parameters:
+        - name: X-MindKey-User-Language
           in: header
-          description: Specify timezone.
           schema:
             type: string
-            default: Europe/Copenhagen
+          example: da-dk
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /{recruiting_customer_id}/candidates:
+    post:
+      tags:
+        - Candidates
+      summary: Create Candidate Required Fields
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/JobAgentGet'
-          text/json:
-            schema:
-              $ref: '#/components/schemas/JobAgentGet'
-          application/*+json:
-            schema:
-              $ref: '#/components/schemas/JobAgentGet'
-      responses:
-        '200':
-          description: Job Agent deleted
-        '400':
-          description: Bad request provided
-        '404':
-          description: Job Agent was not found
-        '500':
-          description: Internal Server Error occured
-  /{customerId}/vacancies/simple:
-    get:
-      tags:
-        - Vacancy
-      summary: Get a simple list of vacancies
+              type: object
+              properties:
+                candidate:
+                  type: string
+                  example: "{\n    \"vacancyId\": \"IMPORT1\",\n\t\"email\": \"hsp@mindkey.com\",\n    \"name\": \"Mandatory Test\",\n    \"registrationTime\": \"{{currentDate}}\",\n    \"allowSave\": true,\n    \"previouslyApplied\": false\n}"
       parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: ShowStartDate
-          in: query
-          schema:
-            type: boolean
-        - name: ShowEndDate
-          in: query
-          schema:
-            type: boolean
-        - name: ShowTeaserText
-          in: query
-          schema:
-            type: boolean
-        - name: ShowLocations
-          in: query
-          schema:
-            type: boolean
-        - name: ShowRegions
-          in: query
-          schema:
-            type: boolean
-        - name: ShowAreas
-          in: query
-          schema:
-            type: boolean
-        - name: VacancyTypeId
-          in: query
-          schema:
-            type: string
-        - name: LocationId
-          in: query
-          schema:
-            type: string
-        - name: RegionName
-          in: query
-          schema:
-            type: string
-        - name: VacancyAreaName
-          in: query
-          schema:
-            type: string
-        - name: ExternalAccess
-          in: query
-          schema:
-            type: boolean
-            deprecated: true
-        - name: InternalAccess
-          in: query
-          schema:
-            type: boolean
-            deprecated: true
-        - name: Access
-          in: query
-          schema:
-            $ref: '#/components/schemas/EnumAccess'
-        - name: IncludeAdvertisementText
-          in: query
-          schema:
-            type: boolean
-        - name: PerDate
-          in: query
-          schema:
-            type: string
-            format: date-time
-        - name: SortDescending
-          in: query
-          schema:
-            type: boolean
-        - name: Unsolicited
-          in: query
-          schema:
-            $ref: '#/components/schemas/EnumVacancyListUnsolicited'
-        - name: SortField
-          in: query
-          schema:
-            $ref: '#/components/schemas/EnumVacancyListSortField'
         - name: X-MindKey-User-Language
           in: header
-          description: Specify User UI Language
           schema:
             type: string
-            default: en-us
+          example: da-DK
         - name: X-MindKey-User-Culture
           in: header
-          description: Specify User UI Culture
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
+          example: da-DK
+        - name: X-MindKey-User-Name
           in: header
-          description: Specify timezone.
           schema:
             type: string
-            default: Europe/Copenhagen
+          example: RecruitingAPI
+        - name: Origin
+          in: header
+          schema:
+            type: string
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
+          schema:
+            type: string
+          required: true
       responses:
         '200':
-          description: Success
+          description: Successful response
           content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/VacancyModel'
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/vacancies/detailed:
+            application/json: {}
+  /{recruiting_customer_id}/candidates/types/Standard:
     get:
       tags:
-        - Vacancy
-      summary: Get a detailed list of vacancies
+        - Candidates
+      summary: Get Candidate Application Type
       parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: VacancyTypeId
-          in: query
-          schema:
-            type: string
-        - name: LocationId
-          in: query
-          schema:
-            type: string
-        - name: RegionName
-          in: query
-          schema:
-            type: string
-        - name: VacancyAreaName
-          in: query
-          schema:
-            type: string
-        - name: ExternalAccess
-          in: query
-          schema:
-            type: boolean
-            deprecated: true
-        - name: InternalAccess
-          in: query
-          schema:
-            type: boolean
-            deprecated: true
-        - name: Access
-          in: query
-          schema:
-            $ref: '#/components/schemas/EnumAccess'
-        - name: IncludeAdvertisementText
-          in: query
-          schema:
-            type: boolean
-        - name: PerDate
-          in: query
-          schema:
-            type: string
-            format: date-time
-        - name: SortDescending
-          in: query
-          schema:
-            type: boolean
-        - name: Unsolicited
-          in: query
-          schema:
-            $ref: '#/components/schemas/EnumVacancyListUnsolicited'
-        - name: SortField
-          in: query
-          schema:
-            $ref: '#/components/schemas/EnumVacancyListSortField'
         - name: X-MindKey-User-Language
           in: header
-          description: Specify User UI Language
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
+          example: en-US
+        - name: Origin
           in: header
-          description: Specify User UI Culture
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
+          example: http://localhost:8080
+        - name: recruiting_customer_id
+          in: path
           schema:
             type: string
-            default: Europe/Copenhagen
+          required: true
       responses:
         '200':
-          description: Success
+          description: Successful response
           content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/VacancyModelDetailed'
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/vacancies/{vacancyId}:
+            application/json: {}
+  /swagger/v1/swagger.json:
     get:
       tags:
-        - Vacancy
-      summary: Get a vacancy by VacancyId
+        - default
+      summary: Swagger
       parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: vacancyId
-          in: path
-          description: VacancyId of the Vacancy to get.
-          required: true
-          schema:
-            type: string
-        - name: IncludeAdvertisementText
-          in: query
-          schema:
-            type: boolean
         - name: X-MindKey-User-Language
           in: header
-          description: Specify User UI Language
           schema:
             type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
+          example: da-DK
       responses:
         '200':
-          description: Success
+          description: Successful response
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VacancyModelDetailed'
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/vacancies/AdvertisementText/{vacancyId}:
-    get:
-      tags:
-        - Vacancy
-      summary: Get advertisement text for a vacancy by VacancyId
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: vacancyId
-          in: path
-          description: VacancyId of the Vacancy to get.
-          required: true
-          schema:
-            type: string
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: string
-        '400':
-          description: Bad request provided
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/vacancies/configuration/list:
-    get:
-      tags:
-        - Vacancy
-      summary: Get configuration for the vacancy list
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VacancyListConfiguration'
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-  /{customerId}/vacancies/configuration/details:
-    get:
-      tags:
-        - Vacancy
-      summary: Get configuration for vacancy details
-      parameters:
-        - name: customerId
-          in: path
-          description: A unique UUID value that identifies the customer.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: X-MindKey-User-Language
-          in: header
-          description: Specify User UI Language
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Culture
-          in: header
-          description: Specify User UI Culture
-          schema:
-            type: string
-            default: en-us
-        - name: X-MindKey-User-Timezone
-          in: header
-          description: Specify timezone.
-          schema:
-            type: string
-            default: Europe/Copenhagen
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VacancyDetailsConfiguration'
-        '404':
-          description: Not Found
-        '500':
-          description: Internal Server Error
-components:
-  schemas:
-    AttachmentDetailBase:
-      type: object
-      properties:
-        documentTypeId:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-      additionalProperties: false
-    CandidateMailingTemplate:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-      additionalProperties: false
-    CandidateUploadModel:
-      required:
-        - allowSave
-        - email
-        - name
-        - previouslyApplied
-        - vacancyId
-      type: object
-      properties:
-        vacancyId:
-          maxLength: 10
-          minLength: 0
-          type: string
-        name:
-          maxLength: 150
-          minLength: 0
-          type: string
-        email:
-          minLength: 1
-          type: string
-          format: email
-        previouslyApplied:
-          type: boolean
-        allowSave:
-          type: boolean
-        nationalityId:
-          type: string
-          nullable: true
-        addressStreet1:
-          type: string
-          nullable: true
-        addressStreet2:
-          type: string
-          nullable: true
-        addressCity:
-          type: string
-          nullable: true
-        addressStateProvince:
-          type: string
-          nullable: true
-        addressZipPostalCode:
-          type: string
-          nullable: true
-        addressCountryRegion:
-          type: string
-          nullable: true
-        homePhone:
-          type: string
-          nullable: true
-        mobilePhone:
-          type: string
-          nullable: true
-        birthDate:
-          type: string
-          format: date-time
-          nullable: true
-        advertisementReference:
-          type: string
-          nullable: true
-        gender:
-          $ref: '#/components/schemas/EnumGender'
-        salutation:
-          $ref: '#/components/schemas/EnumSalutation'
-        maritalStatus:
-          $ref: '#/components/schemas/EnumMaritalStatus'
-        candidateMailingTemplateId:
-          type: string
-          nullable: true
-        locations:
-          type: array
-          items:
-            type: string
-          nullable: true
-        regions:
-          type: array
-          items:
-            type: string
-          nullable: true
-        fieldsOfWork:
-          type: array
-          items:
-            type: string
-          nullable: true
-        vacancyElementLines:
-          type: array
-          items:
-            type: string
-          nullable: true
-        attachmentDetails:
-          type: array
-          items:
-            $ref: '#/components/schemas/AttachmentDetailBase'
-          nullable: true
-      additionalProperties: false
-      description: |2-
-
-         See CandidateUploadModel model.
-      example: >-
-        {"attachmentDetails":null,"vacancyId":null,"name":null,"email":null,"previouslyApplied":null,"allowSave":null,"nationalityId":null,"addressStreet1":null,"addressStreet2":null,"addressCity":null,"addressStateProvince":null,"addressZipPostalCode":null,"addressCountryRegion":null,"homePhone":null,"mobilePhone":null,"birthDate":null,"advertisementReference":null,"gender":"NotSpecified","salutation":"None","maritalStatus":"NotSpecified","candidateMailingTemplateId":null,"locations":null,"regions":null,"fieldsOfWork":null,"vacancyElementLines":null}
-    Culture:
-      type: object
-      properties:
-        cultureId:
-          type: string
-          nullable: true
-        name:
-          type: string
-          nullable: true
-      additionalProperties: false
-    DocumentFileType:
-      type: object
-      properties:
-        documentFileTypeId:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-      additionalProperties: false
-    EnumAccess:
-      enum:
-        - External
-        - Internal
-        - All
-      type: string
-    EnumGender:
-      enum:
-        - NotSpecified
-        - Male
-        - Female
-      type: string
-    EnumMaritalStatus:
-      enum:
-        - NotSpecified
-        - Single
-        - Married
-        - Divorced
-        - Widowed
-        - Cohabit
-      type: string
-    EnumSalutation:
-      enum:
-        - None
-        - Dr
-        - Miss
-        - Mr
-        - Mrs
-        - Ms
-      type: string
-    EnumVacancyDetailShowType:
-      enum:
-        - Hide
-        - Show
-        - Sidebar
-      type: string
-    EnumVacancyListSortField:
-      enum:
-        - Description
-        - StartDate
-        - EndDate
-        - Priority
-      type: string
-    EnumVacancyListUnsolicited:
-      enum:
-        - Bottom
-        - Top
-        - Hide
-        - Only
-      type: string
-    FieldOfWork:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-      additionalProperties: false
-    JobAgent:
-      required:
-        - email
-        - name
-      type: object
-      properties:
-        name:
-          maxLength: 150
-          minLength: 0
-          type: string
-        email:
-          minLength: 1
-          type: string
-          format: email
-        cultureId:
-          type: string
-          nullable: true
-        keywords:
-          type: string
-          nullable: true
-        locations:
-          type: array
-          items:
-            type: string
-          nullable: true
-        regions:
-          type: array
-          items:
-            type: string
-          nullable: true
-        fieldsOfWork:
-          type: array
-          items:
-            type: string
-          nullable: true
-      additionalProperties: false
-    JobAgentConfiguration:
-      type: object
-      properties:
-        jobAgentTypeId:
-          type: string
-          nullable: true
-      additionalProperties: false
-    JobAgentGet:
-      required:
-        - code
-        - jobAgentId
-      type: object
-      properties:
-        jobAgentId:
-          type: string
-          format: uuid
-        code:
-          minLength: 1
-          type: string
-      additionalProperties: false
-    JobAgentType:
-      type: object
-      properties:
-        repeatEmail:
-          type: boolean
-        showCulture:
-          type: boolean
-        showKeywords:
-          type: boolean
-        allowSaveDisclaimer:
-          type: string
-          nullable: true
-        cultures:
-          type: array
-          items:
-            $ref: '#/components/schemas/Culture'
-          nullable: true
-          readOnly: true
-        locations:
-          type: array
-          items:
-            $ref: '#/components/schemas/Location'
-          nullable: true
-          readOnly: true
-        fieldsOfWork:
-          type: array
-          items:
-            $ref: '#/components/schemas/FieldOfWork'
-          nullable: true
-          readOnly: true
-        regions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Region'
-          nullable: true
-          readOnly: true
-      additionalProperties: false
-    JobAgentUpdate:
-      required:
-        - email
-        - name
-      type: object
-      properties:
-        name:
-          maxLength: 150
-          minLength: 0
-          type: string
-        email:
-          minLength: 1
-          type: string
-          format: email
-        cultureId:
-          type: string
-          nullable: true
-        keywords:
-          type: string
-          nullable: true
-        locations:
-          type: array
-          items:
-            type: string
-          nullable: true
-        regions:
-          type: array
-          items:
-            type: string
-          nullable: true
-        fieldsOfWork:
-          type: array
-          items:
-            type: string
-          nullable: true
-        jobAgentId:
-          type: string
-          format: uuid
-        code:
-          type: string
-          nullable: true
-      additionalProperties: false
-    Location:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-      additionalProperties: false
-    LookupData:
-      type: object
-      properties:
-        countries:
-          type: array
-          items:
-            type: string
-          nullable: true
-          readOnly: true
-        nationalities:
-          type: array
-          items:
-            type: string
-          nullable: true
-          readOnly: true
-        documentFileTypes:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentFileType'
-          nullable: true
-          readOnly: true
-        cultures:
-          type: array
-          items:
-            $ref: '#/components/schemas/Culture'
-          nullable: true
-          readOnly: true
-      additionalProperties: false
-    Media:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-      additionalProperties: false
-    Region:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-      additionalProperties: false
-    VacancyDetailsConfiguration:
-      type: object
-      properties:
-        showStartDate:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showEndDate:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showVacancyType:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showContactPersonName:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showContactPersonWorkPhone:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showContactPersonMobilePhone:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showContactPersonEmail:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showPositionStartDate:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showEmploymentCategoryName:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showOrganizationName:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showLocations:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showRegions:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showTeaser:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showCompanyName:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showCompanyAddress:
-          $ref: '#/components/schemas/EnumVacancyDetailShowType'
-        showLongDate:
-          type: boolean
-      additionalProperties: false
-    VacancyElement:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        allowMultipleSelection:
-          type: boolean
-        vacancyElementLines:
-          type: array
-          items:
-            $ref: '#/components/schemas/VacancyElementLine'
-          nullable: true
-      additionalProperties: false
-    VacancyElementLine:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-      additionalProperties: false
-    VacancyListConfiguration:
-      type: object
-      properties:
-        showFilters:
-          type: boolean
-        showApplyLink:
-          type: boolean
-        showStartDate:
-          type: boolean
-        showEndDate:
-          type: boolean
-        showLongDate:
-          type: boolean
-        sortField:
-          $ref: '#/components/schemas/EnumVacancyListSortField'
-        sortDescending:
-          type: boolean
-        showTeaserText:
-          type: boolean
-        showLocations:
-          type: boolean
-        showRegions:
-          type: boolean
-        unsolicited:
-          $ref: '#/components/schemas/EnumVacancyListUnsolicited'
-      additionalProperties: false
-    VacancyModel:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        type:
-          $ref: '#/components/schemas/VacancyType'
-        startDate:
-          type: string
-          format: date-time
-          nullable: true
-        endDate:
-          type: string
-          format: date-time
-          nullable: true
-        priority:
-          type: integer
-          format: int32
-        unsolicited:
-          type: boolean
-        internalAccess:
-          type: boolean
-        externalAccess:
-          type: boolean
-        teaserText:
-          type: string
-          nullable: true
-        locations:
-          type: array
-          items:
-            $ref: '#/components/schemas/Location'
-          nullable: true
-        regions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Region'
-          nullable: true
-        areas:
-          type: array
-          items:
-            $ref: '#/components/schemas/VacancyVacancyArea'
-          nullable: true
-      additionalProperties: false
-    VacancyModelDetailed:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        type:
-          $ref: '#/components/schemas/VacancyType'
-        startDate:
-          type: string
-          format: date-time
-          nullable: true
-        endDate:
-          type: string
-          format: date-time
-          nullable: true
-        positionStartDate:
-          type: string
-          format: date-time
-          nullable: true
-        priority:
-          type: integer
-          format: int32
-        reAdvertisement:
-          type: boolean
-        unsolicited:
-          type: boolean
-        employmentCategoryName:
-          type: string
-          nullable: true
-        internalAccess:
-          type: boolean
-        externalAccess:
-          type: boolean
-        teaserText:
-          type: string
-          nullable: true
-        contactEmployeeName:
-          type: string
-          nullable: true
-        contactEmployeWorkPhoneNumber:
-          type: string
-          nullable: true
-        contactEmployeeMobilePhoneNumber:
-          type: string
-          nullable: true
-        contactEmployeeEmail:
-          type: string
-          nullable: true
-        organizationName:
-          type: string
-          nullable: true
-        companyName:
-          type: string
-          nullable: true
-        companyAddress:
-          type: string
-          nullable: true
-        candidateApplicationFormTypeId:
-          type: string
-          nullable: true
-        advertisementText:
-          type: string
-          nullable: true
-        locations:
-          type: array
-          items:
-            $ref: '#/components/schemas/Location'
-          nullable: true
-        fieldsOfWork:
-          type: array
-          items:
-            $ref: '#/components/schemas/FieldOfWork'
-          nullable: true
-        regions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Region'
-          nullable: true
-        areas:
-          type: array
-          items:
-            $ref: '#/components/schemas/VacancyVacancyArea'
-          nullable: true
-        vacancyElements:
-          type: array
-          items:
-            $ref: '#/components/schemas/VacancyElement'
-          nullable: true
-        medias:
-          type: array
-          items:
-            $ref: '#/components/schemas/Media'
-          nullable: true
-      additionalProperties: false
-    VacancyType:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-      additionalProperties: false
-    VacancyVacancyArea:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: true
-      additionalProperties: false
-tags:
-  - name: Candidate
-    description: >-
-      This is used to create a new candidate in MindKey connected to a specific
-      vacancy
-  - name: JobAgent
-    description: >-
-      This is used to retrieve information about a Job Agent Type or to
-      create/update/delete Job Agents.
-  - name: Vacancy
-    description: >-
-      Vacancies are created in the MindKey by HR users, and can be retrieved
-      from the API in order to be displayed on a webpage
+            application/json: {}
+x-readme:
+  explorer-enabled: true
+  proxy-enabled: true
+  samples-enabled: true
